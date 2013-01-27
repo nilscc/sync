@@ -9,8 +9,10 @@ import Data.ByteString (ByteString)
 import Data.Bits
 import Data.Conduit
 import Data.Conduit.Network
+import Data.String
 
 import qualified Data.ByteString       as BS
+import qualified Data.ByteString.Char8 as B8
 import qualified Data.ByteString.Lazy  as BL
 import qualified Data.Conduit.List     as CL
 import qualified Data.Conduit.Binary   as CB
@@ -29,6 +31,11 @@ receive ad = appSource ad $= CL.map SizedBS
 
 -- | Fixed length ByteString packet
 newtype SizedBS = SizedBS { sized_raw :: ByteString }
+  deriving (Eq, Show)
+
+instance IsString SizedBS where
+  fromString s = let bs = B8.pack s
+                  in SizedBS $ BS.pack (varint (BS.length bs)) `BS.append` bs
 
 withRaw :: Monad m => Pipe ByteString ByteString o u m r -> Pipe SizedBS SizedBS o u m r
 withRaw = mapInput (sized_raw) (Just . SizedBS) 

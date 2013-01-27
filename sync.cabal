@@ -1,0 +1,39 @@
+Name:                sync2
+Version:             0.1
+
+Synopsis:            file transfer and synchronisation (attempt #2)
+Description:         file transfer and synchronisation (attempt #2)
+
+License:             BSD3
+License-file:        LICENSE
+Author:              Nils Schweinsberg <mail@nils.cc>
+Maintainer:          mail@nils.cc
+-- Copyright:           
+
+Category:            Network
+
+Build-type:          Custom
+Cabal-version:       >=1.2
+
+-- Extra-source-files:  
+
+Library
+
+  HS-source-dirs:    src
+  GHC-options:       -O2
+
+  Build-depends:       
+    base == 4.*, directory, filepath, network, mtl, bytestring >= 0.10,
+    data-accessor, containers,
+    protocol-buffers, protocol-buffers-descriptor,
+    cryptohash,
+    monad-peel,
+    bencode, conduit, network-conduit
+
+  Exposed-modules:
+    Sync2
+    Sync2.Protocol
+    Sync2.Protocol.VarInt
+    Sync2.Hashing
+    Sync2.Hashing.RollingHash
+  Other-modules:       

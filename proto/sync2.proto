@@ -1,0 +1,6 @@
+package Sync2.Protocol.ProtoBuff;
+
+message FileTransferInfo {
+  required string ft_filename  = 0;
+  required uint32 ft_blocksize = 1;
+}

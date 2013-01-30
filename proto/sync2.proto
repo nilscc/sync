@@ -2,5 +2,16 @@ package Sync2.Protocol.ProtoBuff;
 
 message FileTransferInfo {
   required string ft_filename  = 0;
-  required uint32 ft_blocksize = 1;
+  required uint64 ft_filesize  = 1;
+  required uint32 ft_blocksize = 2;
+}
+
+message FileLoc {
+  required uint64 fl_position = 0;
+  required uint32 fl_size     = 1;
+}
+
+message MD4Hash {
+  required FileLoc md4_loc  = 0;
+  required bytes   md4_hash = 1;
 }

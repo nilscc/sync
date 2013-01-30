@@ -28,12 +28,14 @@ Library
     protocol-buffers, protocol-buffers-descriptor,
     cryptohash,
     monad-peel,
-    bencode, conduit, network-conduit
+    resourcet, conduit, network-conduit
 
   Exposed-modules:
     Sync2
-    Sync2.Protocol
-    Sync2.Protocol.VarInt
     Sync2.Hashing
     Sync2.Hashing.RollingHash
+    Sync2.IO
+    Sync2.Protocol
+    Sync2.Protocol.VarInt
+    Sync2.Protocol.Internal
   Other-modules:       

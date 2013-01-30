@@ -1,37 +1,68 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS -fno-warn-name-shadowing #-}
 
 module Sync2 where
 
 import Control.Monad.Trans
-import Data.Conduit
-import Data.Conduit.Network
-import Data.ByteString.Lazy.Char8 (unpack)
+import System.IO
+import System.Directory
+import Text.ProtocolBuffers
 
-import qualified Data.Conduit.List   as CL
 import qualified Data.Conduit.Binary as CB
 
-import Sync2.Protocol
+import Sync2.IO
 import Sync2.Hashing
+import Sync2.Protocol
 
-p :: Int
-p = 8872
+port :: Int
+port = 8872
 
 server :: IO ()
-server =
-  runTCPServer (serverSettings p HostAny) $ \app -> do
-    -- get filename
-    (next,file) <- receive app $$+ getBS
-    print (unpack file)
-    -- get hashes
-    hashes <- next $$+- condDecRolling =$ CL.consume
-    mapM_ print hashes
+server = runServer (serverSettings port HostAny) $ do
+
+  -- get fileinfo
+  (next,Just fi) <- receive $$+ getMsg
+  let fp    = toString     $ ft_filename fi
+      s_blk = fromIntegral $ ft_blocksize fi
+
+  h <- withBinaryFile' fp ReadMode
+
+  -- get hashes & send out matching
+  (next, m_lookup) <- next $$++ getRollingHash fi
+  putMatching h m_lookup s_blk $$ sendMsg
+
+  -- receive MD4 hashes and send out locations of matched blocks
+  -- (receiving pipe can be closed)
+  matches <- next $$+- condToMsg' =$ checkMatching h =$ andReturn sendMsg
+
+  liftIO $ mapM_ print matches
+  -- send out binary blocks of unmatched data
+  --sendUnmatched h matches
 
 client :: IO ()
-client = runResourceT $
-  runTCPClient (clientSettings p "localhost") $ \app -> do
-    -- send filename
-    putBS "Sync2.hs" $$ send app
-    -- wait for user input
-    _ <- liftIO $ getLine
-    -- send hashes
-    CB.sourceFile "Sync2.hs" $= condEncRolling 300 $$ send app
+client = runClient (clientSettings port "localhost") $ do
+
+  let fp     = "Sync2.hs"
+      s_blck = 300
+
+  -- send file info
+  getFileInfoP fp s_blck $$ sendMsg
+
+  h_loc <- withBinaryFile' fp ReadMode
+
+  -- send rolling hashes
+  CB.sourceFile fp $$ putRollingHash s_blck =$ send
+
+  -- send MD4 hashes on requested blocks
+  (next,()) <- receive $$+ condToMsg' =$ hashMatching h_loc =$ sendMsg
+
+  -- receive matching blocks
+  (next,matches) <- next $$++ getMatching
+
+  liftIO $ mapM_ print matches
+  -- open temporary file and receive incoming data
+  --(f_tmp,h_tmp) <- withBinaryTempFile' "." (fp ++ ".part") False
+  --next $$+- receiveUnmatched h_loc h_tmp matches -- (close pipe!)
+
+  -- rename files
+  --liftIO $ renameFile f_tmp fp

@@ -3,7 +3,7 @@
 
 module Sync2.Hashing.RollingHash
   ( R, Rolling (..)
-  , hash, roll
+  , hash, roll, skipBlock, emptyR
   , rsum
   , buildWord32
   , buildWord32'
@@ -78,8 +78,14 @@ r2 l d = go 0 0
 -- | \"Roll\" to the next byte, i.e. increase the offset @k@ to @k+1@ and
 -- calculate the next hash
 roll :: R -> R
-roll r = r
-  { dat = drop 1 (dat r)
+roll r = rollN 1 r
+
+skipBlock :: R -> R
+skipBlock r = rollN (len r) r
+
+rollN :: Int -> R -> R
+rollN n r = r
+  { dat = drop n (dat r)
   , a   = a'
   , b   = b r - l * d_0 + a'
   }
@@ -90,6 +96,9 @@ roll r = r
   -- d_k and d_(k+L)
   d_0 = fromIntegral $ dat r !! 0
   d_l = fromIntegral $ dat r !! len r
+
+emptyR :: R -> Bool
+emptyR r = null (dat r)
 
 -- | Sum both 16 bit values for faster indexing
 rsum :: R -> Word16

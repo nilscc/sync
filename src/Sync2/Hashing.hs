@@ -192,6 +192,9 @@ srvRcvRollingHash fi =
 
   to_lookup :: Monad m => Sink Word32 m (Word64, LookupWeak)
   to_lookup = CL.fold `flip` (0, M.empty) $ \(c,m) w32 ->
+    -- TODO / FIXME: Last blocksize might be less than 's'. This should usually
+    -- not be an issue because it's only being used by 'clHashMatching' with
+    -- 'BL.hGet' which terminates if the size is too long.
     let fl = FileLoc (c * s) (fromIntegral s)
         m' = M.alter (add_fl fl) w32 m
      in (c+1, m')

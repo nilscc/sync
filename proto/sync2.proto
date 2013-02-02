@@ -12,6 +12,6 @@ message FileLoc {
 }
 
 message MD4Hash {
-  required FileLoc md4_loc  = 0;
-  required bytes   md4_hash = 1;
+  required bytes   md4_hash = 0;
+  repeated FileLoc md4_locs = 1;
 }

@@ -1,7 +1,13 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 
-module Sync2.IO where
+module Sync2.IO
+  ( BlockSize
+  , getFileSize
+  , getFileInfo
+  , withBinaryFile', withBinaryTempFile'
+  , CB.sourceFile
+  ) where
 
 import Control.Monad
 import Control.Monad.Trans
@@ -9,6 +15,8 @@ import Control.Monad.Trans.Resource
 import System.Directory
 import System.IO
 import Text.ProtocolBuffers
+
+import qualified Data.Conduit.Binary as CB
 
 import Sync2.Protocol
 

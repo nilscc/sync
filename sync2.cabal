@@ -24,11 +24,12 @@ Library
 
   Build-depends:       
     base == 4.*, directory, filepath, network, mtl, bytestring >= 0.10,
-    data-accessor, containers,
+    data-accessor, containers >= 0.5,
     protocol-buffers, protocol-buffers-descriptor,
     cryptohash,
     monad-peel,
-    resourcet, conduit, network-conduit
+    resourcet, conduit, network-conduit,
+    conduit-network-stream
 
   Exposed-modules:
     Sync2
@@ -36,6 +37,6 @@ Library
     Sync2.Hashing.RollingHash
     Sync2.IO
     Sync2.Protocol
-    Sync2.Protocol.VarInt
     Sync2.Protocol.Internal
-  Other-modules:       
+    Sync2.Exceptions
+  Other-modules:

@@ -5,64 +5,82 @@ module Sync2 where
 
 import Control.Monad.Trans
 import System.IO
-import System.Directory
+--import System.Directory
 import Text.ProtocolBuffers
 
-import qualified Data.Conduit.Binary as CB
+import qualified Data.Map as M
+import qualified Data.Set as S
 
 import Sync2.IO
 import Sync2.Hashing
 import Sync2.Protocol
 
+import Data.Conduit
+--import Data.Conduit.List (sinkNull)
+
 port :: Int
 port = 8872
+
+blocksize :: Int
+blocksize = 2
+
+clF, srvF, upF :: FilePath
+clF  = "test.txt"
+srvF = "test-srv.txt"
+upF  = "test-upload.txt"
+
+condShow :: (MonadIO m, Show a) => Conduit a m a
+condShow = awaitForever $ \a -> do
+  liftIO (print a)
+  yield a
 
 server :: IO ()
 server = runServer (serverSettings port HostAny) $ do
 
   -- get fileinfo
-  (next,Just fi) <- receive $$+ getMsg
+  --Just fi' <- getMsg
+  fi <- getFileInfo srvF blocksize
   let fp    = toString     $ ft_filename fi
       s_blk = fromIntegral $ ft_blocksize fi
 
-  h <- withBinaryFile' fp ReadMode
-
   -- get hashes & send out matching
-  (next, m_lookup) <- next $$++ getRollingHash fi
-  putMatching h m_lookup s_blk $$ sendMsg
+  m_lookup <- srvGetRollingHash fi
 
-  -- receive MD4 hashes and send out locations of matched blocks
-  -- (receiving pipe can be closed)
-  matches <- next $$+- condToMsg' =$ checkMatching h =$ andReturn sendMsg
+  -- get matched/unmatched lookup map
+  m_fl <- srvSendMatching fp m_lookup s_blk
+  lkup@(SrvLookupMatched m_final) <- srvGetMatched m_fl
 
-  liftIO $ mapM_ print matches
-  -- send out binary blocks of unmatched data
-  --sendUnmatched h matches
+  liftIO $ do
+    putStrLn "\nMatched blocks:"
+    mapM_ print $ M.toList m_final
+    putStrLn ""
+
+  -- receive unmatched blocks
+  liftIO $ putStrLn "Receiving..."
+  srvSaveUploadAs fp lkup upF
+  liftIO $ putStrLn "Done!"
 
 client :: IO ()
 client = runClient (clientSettings port "localhost") $ do
 
-  let fp     = "Sync2.hs"
-      s_blck = 300
+  let fp = clF
 
   -- send file info
-  getFileInfoP fp s_blck $$ sendMsg
-
-  h_loc <- withBinaryFile' fp ReadMode
+  --send1 $ getFileInfoP fp s_blck $= fromMsg
 
   -- send rolling hashes
-  CB.sourceFile fp $$ putRollingHash s_blck =$ send
+  clSendRollingHashes fp blocksize
 
-  -- send MD4 hashes on requested blocks
-  (next,()) <- receive $$+ condToMsg' =$ hashMatching h_loc =$ sendMsg
+  -- open local file
+  h <- withBinaryFile' fp ReadMode
 
-  -- receive matching blocks
-  (next,matches) <- next $$++ getMatching
+  -- get matching blocks (sends out unmatched blocks)
+  lkup@(ClLookupMatched blcks) <- clGetMatching h
+  liftIO $ do
+    putStrLn "\nMatched blocks:"
+    mapM_ print $ S.elems blcks
+    putStrLn ""
 
-  liftIO $ mapM_ print matches
-  -- open temporary file and receive incoming data
-  --(f_tmp,h_tmp) <- withBinaryTempFile' "." (fp ++ ".part") False
-  --next $$+- receiveUnmatched h_loc h_tmp matches -- (close pipe!)
-
-  -- rename files
-  --liftIO $ renameFile f_tmp fp
+  liftIO $ putStrLn "Uploading..."
+  clUpload h lkup
+  liftIO $ putStrLn "Done!"

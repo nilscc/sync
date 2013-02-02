@@ -69,14 +69,16 @@ instance Rolling [Word8] where
       { dat      = d'
       , dat_left = left
       , dat_len  = l_tot
-      , len      = l
-      , a        = r1 l d'
-      , b        = r2 l d'
+      , len      = l'
+      , a        = r1 l' d'
+      , b        = r2 l' d'
       }
     | otherwise = emptyR
    where
     d' = drop k d
     left = l_tot - fromIntegral k
+    -- make sure we dont exceed any limits
+    l' = minimum [l, fromIntegral left]
 
 instance Rolling BL.ByteString where
   mkR k l l_tot d = mkR k l l_tot (BL.unpack d)
@@ -108,18 +110,18 @@ roll r
   | otherwise  = r
     { dat      = tail (dat r)
     , a        = a'
-    , b        = b r - l * d_0 + a'
+    , b        = b r - fromIntegral l' * d_0 + a'
     , dat_left = left' -- dat_left r - 1
-    , len      = minimum [fromIntegral l, fromIntegral left']
+    , len      = l'
     }
  where
   -- a(k+1)
   a'    = a r - d_0 + d_l
-  l     = fromIntegral $ len r
+  l'    = minimum [len r, fromIntegral left']
   left' = dat_left r - 1
   -- d_k and d_(k+L)
   d_0 = fromIntegral $ dat r !! 0
-  d_l = fromIntegral $ dat r !! len r
+  d_l = fromIntegral $ dat r !! l'
 
 -- | Skip a block of the current block length. Returns 'emptyR' when done.
 skipBlock :: R -> R

@@ -22,7 +22,7 @@ port :: Int
 port = 8872
 
 blocksize :: Int
-blocksize = 2
+blocksize = 5
 
 clF, srvF, upF :: FilePath
 clF  = "test.txt"

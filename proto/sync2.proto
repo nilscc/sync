@@ -11,7 +11,7 @@ message FileLoc {
   required uint32 fl_size     = 1;
 }
 
-message MD4Hash {
-  required bytes   md4_hash = 0;
-  repeated FileLoc md4_locs = 1;
+message MD5Hash {
+  required bytes   md5_hash = 0;
+  required FileLoc md5_loc  = 1;
 }

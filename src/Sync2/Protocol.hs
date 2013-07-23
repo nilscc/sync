@@ -1,4 +1,5 @@
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ConstraintKinds #-}
@@ -8,17 +9,17 @@ module Sync2.Protocol
     runServer, runClient
   , ServerSettings, serverSettings, HostPreference (..)
   , ClientSettings, clientSettings
-  , send1, NS.sink1, sendList, NS.sinkList, sinkList'
-  , receive, NS.next
-  , ($=), (=$), (~~)
-  , getAppData
+  , send, NS.streamSink, NS.withElementSink
+  , receive
+  , ($=), (=$)
+  , getStreamData
     -- ** Protocol buffer messages
   , sendMsg, getMsg
   , toMsg, toMsg', fromMsg
   , module Sync2.Protocol.ProtoBuff
   , module Sync2.Protocol.ProtoBuff.FileTransferInfo
   , module Sync2.Protocol.ProtoBuff.FileLoc
-  , module Sync2.Protocol.ProtoBuff.MD4Hash
+  , module Sync2.Protocol.ProtoBuff.MD5Hash
     -- ** Combinators
   , andReturn
   ) where
@@ -40,45 +41,34 @@ import Sync2.Protocol.Internal
 import Sync2.Protocol.ProtoBuff
 import Sync2.Protocol.ProtoBuff.FileTransferInfo
 import Sync2.Protocol.ProtoBuff.FileLoc
-import Sync2.Protocol.ProtoBuff.MD4Hash
+import Sync2.Protocol.ProtoBuff.MD5Hash
 
 runServer
   :: (MonadResourceBase m, MonadBaseControl IO m)
   => ServerSettings (ResourceT m)
   -> NetApp m ()
   -> m ()
-runServer s run = runResourceT $ runTCPServer s $ \ad ->
-  runReaderT (evalStateT (run >> close) (Left ad)) ad
+runServer s run = runResourceT $ runTCPServer s $ \ad -> do
+  sd <- NS.toStreamData ad
+  runReaderT (evalStateT (run >> close) (Left sd)) sd
 
 runClient
   :: (MonadResourceBase m, MonadBaseControl IO m)
   => ClientSettings (ResourceT m)
   -> NetApp m ()
   -> m ()
-runClient s run = runResourceT $runTCPClient s $ \ad ->
-  runReaderT (evalStateT (run >> close) (Left ad)) ad
+runClient s run = runResourceT $ runTCPClient s $ \ad -> do
+  sd <- NS.toStreamData ad
+  runReaderT (evalStateT (run >> close) (Left sd)) sd
 
-getAppData :: Monad m => NetApp m (NetData m)
-getAppData = lift ask
+getStreamData :: Monad m => NetApp m (NetData m)
+getStreamData = lift ask
 
 -- | Functions from "Data.Conduit.Network.Stream" lifted to the 'NetApp' monad
-send1, sendList :: (Monad m, NetSendable a m) => Source (NetStream m) a -> NetApp m ()
-send1 src = do
-  ad <- getAppData
-  lift.lift $ NS.send1 ad src
-
-sendList src = do
-  ad <- getAppData
-  lift.lift $ NS.sendList ad src
-
-sinkList'
-  :: (Monad m, NetSendable a m)
-  => NetData m
-  -> (Sink a (NetStream m) () -> Sink b (NetStream m) c)
-  -> Sink b (NetStream m) c
-sinkList' nd f = do
-  NS.sinkList' nd f
-  
+send :: (Monad m, NetSendable a m) => Source (NetStream m) a -> NetApp m ()
+send src = do
+  sd <- getStreamData
+  lift.lift $ NS.send sd src
 
 -- | 'Data.Conduit.Network.Stream.receive' lifted to the 'NetApp' monad
 receive
@@ -86,21 +76,14 @@ receive
   => Sink BL.ByteString (NetStream m) b
   -> NetApp m b
 receive sink = do
-  src <- get
-  (next,b) <- lift.lift $ either NS.receive NS.receive src $ sink
-  put (Right next)
-  return b
- --where
-  --recD :: NetData m
+  sd <- getStreamData
+  lift . lift $ NS.receive sd sink
 
 -- Close a resumable source
 close :: MonadResourceBase m => NetApp m ()
 close = do
-  src <- get
-  either ignore close' src
- where
-  close' src = lift.lift $ NS.close src
-  ignore _   = return ()
+  sd <- getStreamData
+  lift . lift $ NS.closeStream sd
 
 --------------------------------------------------------------------------------
 -- Protocol buffer messages
@@ -140,7 +123,7 @@ sendMsg
   :: (PB.ReflectDescriptor msg, PB.Wire msg, MonadResourceBase m)
   => msg -> NetApp m ()
 sendMsg msg = do
-  send1 $ yield msg $= fromMsg
+  send $ yield msg $= fromMsg
 
 --------------------------------------------------------------------------------
 -- Funky combinators
@@ -153,5 +136,5 @@ andReturn sink = do
 --------------------------------------------------------------------------------
 -- Lifted functions
 
-(~~) :: Monad m => Source (NetStream m) a -> Sink a (NetStream m) b -> NetApp m b
-src ~~ sink = lift . lift $ src NS.~~ sink
+--(~~) :: Monad m => Source (NetStream m) a -> Sink a (NetStream m) b -> NetApp m b
+--src ~~ sink = lift . lift $ src NS.~~ sink

@@ -29,12 +29,12 @@ Library
     cryptohash,
     monad-peel,
     resourcet, conduit, network-conduit,
-    conduit-network-stream
+    conduit-network-stream,
+    rolling-hash
 
   Exposed-modules:
     Sync2
     Sync2.Hashing
-    Sync2.Hashing.RollingHash
     Sync2.IO
     Sync2.Protocol
     Sync2.Protocol.Internal

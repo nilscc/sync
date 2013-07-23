@@ -22,12 +22,17 @@ port :: Int
 port = 8872
 
 blocksize :: Int
-blocksize = 5
+blocksize = 5000
 
-clF, srvF, upF :: FilePath
-clF  = "test.txt"
-srvF = "test-srv.txt"
-upF  = "test-upload.txt"
+clF, srvF :: FilePath
+clF  = "src.mkv"
+srvF = "dest.mkv"
+
+--main :: IO ()
+--main = server
+
+--upF :: FilePath
+--upF  = "test-upload.txt"
 
 condShow :: (MonadIO m, Show a) => Conduit a m a
 condShow = awaitForever $ \a -> do
@@ -48,17 +53,16 @@ server = runServer (serverSettings port HostAny) $ do
 
   -- get matched/unmatched lookup map
   m_fl <- srvSendMatching fp m_lookup s_blk
-  lkup@(SrvLookupMatched m_final) <- srvGetMatched m_fl
+  _lkup@(SrvLookupMatched m_final) <- srvGetMatched m_fl
 
   liftIO $ do
     putStrLn "\nMatched blocks:"
     mapM_ print $ M.toList m_final
     putStrLn ""
 
-  -- receive unmatched blocks
-  liftIO $ putStrLn "Receiving..."
-  srvSaveUploadAs fp lkup upF
-  liftIO $ putStrLn "Done!"
+  --liftIO $ putStr "Receiving... " >> hFlush stdout
+  --srvSaveUploadAs fp lkup upF
+  --liftIO $ putStrLn "Done!"
 
 client :: IO ()
 client = runClient (clientSettings port "localhost") $ do
@@ -75,12 +79,12 @@ client = runClient (clientSettings port "localhost") $ do
   h <- withBinaryFile' fp ReadMode
 
   -- get matching blocks (sends out unmatched blocks)
-  lkup@(ClLookupMatched blcks) <- clGetMatching h
+  _lkup@(ClLookupMatched blcks) <- clGetMatching h
   liftIO $ do
     putStrLn "\nMatched blocks:"
     mapM_ print $ S.elems blcks
     putStrLn ""
 
-  liftIO $ putStrLn "Uploading..."
-  clUpload h lkup
-  liftIO $ putStrLn "Done!"
+  --liftIO $ putStr "Uploading... " >> hFlush stdout
+  --clUpload h lkup
+  --liftIO $ putStrLn "Done!"

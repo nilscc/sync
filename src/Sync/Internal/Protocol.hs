@@ -76,7 +76,7 @@ close = do
 -- Protocol buffer messages
 
 toMsg
-  :: (PB.ReflectDescriptor msg, PB.Wire msg, Monad m)
+  :: (IsMessage msg, Monad m)
   => Conduit BL.ByteString m (Maybe msg)
 toMsg = CL.map $ \bs ->
   case PB.messageGet bs of
@@ -85,7 +85,7 @@ toMsg = CL.map $ \bs ->
 
 -- | Same as @condToMsg@ but ignore all @Nothing@s
 toMsg'
-  :: (PB.ReflectDescriptor msg, PB.Wire msg, Monad m)
+  :: (IsMessage msg, Monad m)
   => Conduit BL.ByteString m msg
 toMsg' = CL.mapMaybe $ \bs ->
   case PB.messageGet bs of
@@ -93,12 +93,12 @@ toMsg' = CL.mapMaybe $ \bs ->
        _                       -> Nothing
 
 fromMsg
-  :: (PB.ReflectDescriptor msg, PB.Wire msg, Monad m)
+  :: (IsMessage msg, Monad m)
   => Conduit msg m ByteString
 fromMsg = CL.map (BL.toStrict . PB.messagePut)
 
 getMsg
-  :: (PB.ReflectDescriptor msg, PB.Wire msg, MonadResourceBase m)
+  :: (IsMessage msg, MonadResourceBase m)
   => NetApp m (Maybe msg)
 getMsg = do
   r <- receive $ CL.isolate 1 =$ toMsg =$ CL.consume
@@ -107,7 +107,7 @@ getMsg = do
     _        -> Nothing
 
 sendMsg
-  :: (PB.ReflectDescriptor msg, PB.Wire msg, MonadResourceBase m)
+  :: (IsMessage msg, MonadResourceBase m)
   => msg -> NetApp m ()
 sendMsg msg = do
   send $ yield msg $= fromMsg

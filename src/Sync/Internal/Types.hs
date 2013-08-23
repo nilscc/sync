@@ -16,6 +16,7 @@ import           Data.Conduit
 import qualified Data.Conduit.Network         as CN
 import           Data.Conduit.Network.Stream
 import           Data.ByteString (ByteString)
+import           Text.ProtocolBuffers
 
 type BlockSize = Int
 type FilePos   = Word64
@@ -24,6 +25,7 @@ type FileBlock = (FilePos, BlockSize)
 type Host = ByteString
 type Port = Int
 
+type IsMessage msg = (ReflectDescriptor msg, Wire msg)
 --------------------------------------------------------------------------------
 -- * Settings
 

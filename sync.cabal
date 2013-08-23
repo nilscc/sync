@@ -34,9 +34,17 @@ Library
 
   Exposed-modules:
     Sync
-    Sync.Hashing
-    Sync.IO
+    Sync.Local
+    Sync.Local.Hashing
+    Sync.Remote
+    Sync.Remote.Hashing
     Sync.Protocol
-    Sync.Protocol.Internal
-    Sync.Exceptions
+    Sync.Types
   Other-modules:
+    Sync.Hashing
+    Sync.Hashing.MD5
+    Sync.Hashing.RollingBlocks
+    Sync.Internal.Exceptions
+    Sync.Internal.IO
+    Sync.Internal.Protocol
+    Sync.Internal.Types

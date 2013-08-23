@@ -9,8 +9,8 @@ module Sync.Protocol
     runServer, runClient
   , ServerSettings, serverSettings, HostPreference (..)
   , ClientSettings, clientSettings
-  , send, NS.streamSink, NS.withElementSink
-  , receive
+  , send, sendList, NS.streamSink, NS.withElementSink
+  , receive, receiveList
   , ($=), (=$)
   , getStreamData
     -- ** Protocol buffer messages
@@ -35,7 +35,7 @@ import qualified Data.Conduit.List            as CL
 import qualified Data.Conduit.Network.Stream  as NS
 import qualified Text.ProtocolBuffers         as PB
 
-import Sync.Protocol.Internal
+import Sync.Types
 
 -- re-exports
 import Sync.Protocol.ProtoBuff
@@ -70,14 +70,23 @@ send src = do
   sd <- getStreamData
   lift.lift $ NS.send sd src
 
+sendList :: (Monad m, NetSendable a m) => [a] -> NetApp m ()
+sendList = send . CL.sourceList
+
 -- | 'Data.Conduit.Network.Stream.receive' lifted to the 'NetApp' monad
 receive
-  :: MonadResourceBase m
-  => Sink BL.ByteString (NetStream m) b
+  :: (MonadResourceBase m, NetReceivable a m)
+  => Sink a (NetStream m) b
   -> NetApp m b
 receive sink = do
   sd <- getStreamData
   lift . lift $ NS.receive sd sink
+
+receiveList
+  :: (MonadResourceBase m, NetReceivable a m)
+  => Conduit a (NetStream m) b
+  -> NetApp m [b]
+receiveList sink = receive $ sink =$= CL.consume
 
 -- Close a resumable source
 close :: MonadResourceBase m => NetApp m ()

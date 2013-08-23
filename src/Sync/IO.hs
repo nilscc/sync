@@ -19,11 +19,10 @@ import Text.ProtocolBuffers
 import qualified Data.Conduit.Binary as CB
 
 import Sync.Protocol
+import Sync.Types
 
 --------------------------------------------------------------------------------
 -- IO
-
-type BlockSize = Int
 
 getFileInfo :: MonadIO m => FilePath -> BlockSize -> m FileTransferInfo
 getFileInfo fp bs = do

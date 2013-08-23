@@ -12,7 +12,7 @@ import Sync.Internal.Types
 
 data SyncException
   = UnexpectedEndOfInput
-  | UnexpectedMessage Msg
+  | UnexpectedMessage [Msg]
   deriving (Typeable, Show)
 
 instance Exception SyncException

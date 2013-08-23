@@ -6,6 +6,7 @@
 
 module Sync.Internal.Protocol where
 
+import Control.Exception
 import Control.Monad.Reader
 import Control.Monad.State
 import Data.ByteString (ByteString)
@@ -18,6 +19,7 @@ import qualified Data.Conduit.Network.Stream  as NS
 import qualified Text.ProtocolBuffers         as PB
 
 import Sync.Internal.Types
+import Sync.Internal.Exceptions
 
 runServer
   :: (MonadResourceBase m, MonadBaseControl IO m)
@@ -111,6 +113,28 @@ sendMsg
   => msg -> NetApp m ()
 sendMsg msg = do
   send $ yield msg $= fromMsg
+
+-- | Await a specific message. May fail with the `UnexpectedMessage` exception.
+awaitMsg
+  :: (IsMessage msg, MonadResourceBase m, Show msg)
+  => NetApp m msg
+awaitMsg = do
+  msgs <- receive $ toMsg' =$= CL.consume
+  case msgs of
+       [msg] -> return msg
+       _     -> throw $ UnexpectedMessage (map Msg msgs)
+
+-- | Expect *exactly* this message. May fail with the `UnexpectedMessage`
+-- exception.
+expectMsg
+  :: (Eq msg, IsMessage msg, MonadResourceBase m, Show msg)
+  => msg
+  -> NetApp m ()
+expectMsg msg' = do
+  msgs <- receive $ toMsg' =$= CL.consume
+  case msgs of
+       [msg] | msg == msg' -> return ()
+       _                   -> throw $ UnexpectedMessage (map Msg msgs)
 
 --------------------------------------------------------------------------------
 -- Funky combinators

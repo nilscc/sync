@@ -4,7 +4,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ConstraintKinds #-}
 
-module Sync.Protocol
+module Sync.Internal.Protocol
   ( -- * Binary network protocol
     runServer, runClient
   , ServerSettings, serverSettings, HostPreference (..)
@@ -35,7 +35,7 @@ import qualified Data.Conduit.List            as CL
 import qualified Data.Conduit.Network.Stream  as NS
 import qualified Text.ProtocolBuffers         as PB
 
-import Sync.Types
+import Sync.Internal.Types
 
 -- re-exports
 import Sync.Protocol.ProtoBuff

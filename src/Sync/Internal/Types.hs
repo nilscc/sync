@@ -3,7 +3,7 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
 
-module Sync.Types where
+module Sync.Internal.Types where
 
 import Data.Word
 import Crypto.RollingHash.Lookup

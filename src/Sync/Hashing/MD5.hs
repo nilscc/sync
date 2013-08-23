@@ -8,8 +8,8 @@ import qualified Crypto.Hash.MD5          as MD5
 import qualified Data.ByteString.Lazy     as BL
 import           System.IO
 
-import Sync.Types
-import Sync.Protocol
+import Sync.Internal.Types
+import Sync.Internal.Protocol
 
 hashBlockMD5
   :: MonadIO m

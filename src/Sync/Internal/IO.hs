@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 
-module Sync.IO
+module Sync.Internal.IO
   ( BlockSize
   , getFileSize
   , getFileInfo
@@ -18,8 +18,8 @@ import Text.ProtocolBuffers
 
 import qualified Data.Conduit.Binary as CB
 
-import Sync.Protocol
-import Sync.Types
+import Sync.Internal.Protocol
+import Sync.Internal.Types
 
 --------------------------------------------------------------------------------
 -- IO

@@ -3,9 +3,9 @@
 module Sync.Local where
 
 import Sync.Local.Hashing
-import Sync.Types
-import Sync.IO
-import Sync.Protocol
+import Sync.Internal.Types
+import Sync.Internal.IO
+import Sync.Internal.Protocol
 
 compareLocalFile
   :: MonadResourceBase m

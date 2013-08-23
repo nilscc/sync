@@ -9,9 +9,9 @@ import           System.IO
 import           Text.ProtocolBuffers
 
 import           Sync.Hashing
-import           Sync.Types
-import           Sync.IO
-import           Sync.Protocol
+import           Sync.Internal.Types
+import           Sync.Internal.IO
+import           Sync.Internal.Protocol
 
 -- | Get weak (\"rolling\") hashes for each block and send them over the stream
 sendRollingHashes

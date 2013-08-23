@@ -21,8 +21,8 @@ import qualified Data.ByteString.Lazy         as BL
 import qualified Data.ByteString.Lazy.Builder as BUILDER
 import           Data.Word
 
-import           Sync.IO
-import           Sync.Types
+import           Sync.Internal.IO
+import           Sync.Internal.Types
 
 toRollingBlocks :: BlockSize -> BL.ByteString -> [RollingHash]
 toRollingBlocks s bs = zip [0,fromIntegral s..] $ go (mkR s bs)

@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 
-module Sync.Exceptions where
+module Sync.Internal.Exceptions where
 
 import Control.Exception
 import Data.Typeable

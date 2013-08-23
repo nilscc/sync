@@ -16,11 +16,6 @@ import           Sync.Internal.Protocol
 import           Sync.Internal.Types
 import           Sync.Hashing
 
-getFileTranssferInfo
-  :: MonadResourceBase m
-  => NetApp m (Maybe FileTransferInfo)
-getFileTranssferInfo = getMsg
-
 -- | Server: Get rolling hashes from the current stream
 getRollingHashes
   :: MonadResourceBase m

@@ -13,7 +13,7 @@ compareLocalFile
   -> BlockSize
   -> NetApp m [HashingMatch MD5]
 compareLocalFile fp blocksize = do
-  f <- getFileInfo fp blocksize
+  f <- getFileTransferInfo fp blocksize
   sendMsg f
   sendRollingHashes f
   getMatchingMD5s f

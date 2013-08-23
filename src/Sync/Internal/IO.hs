@@ -4,7 +4,7 @@
 module Sync.Internal.IO
   ( BlockSize
   , getFileSize
-  , getFileInfo
+  , getFileTransferInfo
   , withBinaryFile', withBinaryTempFile'
   , CB.sourceFile
   ) where
@@ -24,8 +24,8 @@ import Sync.Internal.Types
 --------------------------------------------------------------------------------
 -- IO
 
-getFileInfo :: MonadIO m => FilePath -> BlockSize -> m FileTransferInfo
-getFileInfo fp bs = do
+getFileTransferInfo :: MonadIO m => FilePath -> BlockSize -> m FileTransferInfo
+getFileTransferInfo fp bs = do
   s <- getFileSize fp
   return $ FileTransferInfo (fromString fp) (fromIntegral s) (fromIntegral bs)
 

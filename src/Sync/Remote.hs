@@ -4,12 +4,13 @@ module Sync.Remote where
 
 import Sync.Remote.Hashing
 import Sync.Internal.Types
+import Sync.Internal.Protocol
 
 compareFileRemote
   :: MonadResourceBase m
   => NetApp m ()
 compareFileRemote = do
-  mf <- getFileTranssferInfo
+  mf <- getMsg
   case mf of
        Nothing -> return ()
        Just f  -> do

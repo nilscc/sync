@@ -1,5 +1,21 @@
 package Sync.Protocol.ProtoBuff;
 
+message Command {
+  enum Cmd {
+    Compare = 0;
+  }
+  required Cmd command = 0;
+}
+
+message Reply {
+  enum Rply {
+    OK        = 0;
+    FAILED    = 1;
+    DENIED    = 2;
+  }
+  required Rply reply = 0;
+}
+
 message FileTransferInfo {
   required string ft_filename  = 0;
   required uint64 ft_filesize  = 1;

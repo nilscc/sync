@@ -1,7 +1,3 @@
-{-# LANGUAGE ConstraintKinds #-}
-{-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-
 module Sync.Hashing
   ( module Sync.Hashing.MD5
   , module Sync.Hashing.RollingBlocks
@@ -19,38 +15,10 @@ module Sync.Hashing
   -- , srvSaveUploadAs
   -- ) where
 
-import Control.Monad
-import Control.Monad.Trans
--- import Crypto.RollingHash
-import Data.Conduit
-import Data.Maybe
--- import Data.List
--- import Data.Word
-import System.IO
-
--- import Data.ByteString (ByteString)
-import Data.Map (Map)
-import Data.Set (Set)
--- import qualified Crypto.Hash.MD5              as M5
--- import           Crypto.RollingHash.Lookup
--- import qualified Crypto.RollingHash.Internal  as RH
--- import qualified Data.ByteString              as BS
-import qualified Data.ByteString.Lazy         as BL
-import qualified Data.Conduit.List            as CL
--- import qualified Data.Conduit.Binary          as CB
--- import qualified Data.Map.Strict              as M
--- import qualified Data.Sequence                as Seq
--- import qualified Data.Foldable                as F
--- import qualified Data.Set                     as S
-
-import Sync.IO
--- import Sync.Exceptions
-import Sync.Protocol
--- import Sync.Protocol.Internal
-import Sync.Hashing.RollingBlocks
 import Sync.Hashing.MD5
-import Sync.Types
+import Sync.Hashing.RollingBlocks
 
+{-
 -- | Lookup map for remote/local file locations
 type LookupLocations = Map FileLoc FileLoc
 
@@ -108,42 +76,6 @@ clUpload h (ClLookupMatched s) =
 
 --------------------------------------------------------------------------------
 -- Server
-
--- | Server: Get rolling hashes from the current stream
-srvGetRollingHash
-  :: MonadResourceBase m
-  => FileTransferInfo
-  -> NetApp m LookupWeak
-srvGetRollingHash fi = do
-  let s = fromIntegral $ ft_blocksize fi
-  rhshs <- receiveList $ CL.map (\(f :: BlockSize -> RollingHash) -> f s)
-  return $ toLookupWeak s rhshs
-
--- | Server: Put (remote) file locations of (weakly) matched blocks into the
--- current stream and return the lookup map for strong hashes of those blocks
-srvFindMatchingWeak
-  :: MonadResourceBase m
-  => FilePath
-  -> LookupWeak
-  -> NetApp m [HashingMatch RollingHash]
-srvFindMatchingWeak fp lkup = do
-  bs <- liftIO $ BL.readFile fp
-  let blocksize = lookup_blocksize lkup
-      blocks    = toRollingBlocks blocksize bs
-      matching  = findMatching lkup blocks
-  return matching
-
-srvSendMD5
-  :: MonadResourceBase m
-  => FilePath
-  -> BlockSize
-  -> [HashingMatch RollingHash]
-  -> NetApp m ()
-srvSendMD5 fp blocksize matches = do
-  h <- withBinaryFile' fp ReadMode
-  send $ forM_ matches $ \match -> do
-    md5 <- hashBlockMD5 h blocksize match
-    yield md5 $= fromMsg
 
 {-
 srvGetMD5Matches
@@ -213,4 +145,5 @@ srvSaveUploadAs fp_loc (SrvLookupMatched m) fp_up = do
     yield blk
     when (r > 0) $
       hGetPipe h r
+-}
 -}

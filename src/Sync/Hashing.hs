@@ -3,6 +3,9 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Sync.Hashing
+  ( module Sync.Hashing.MD5
+  , module Sync.Hashing.RollingBlocks
+  ) where
   -- (
   --   getFileInfoP
   --   -- ** Client functions
@@ -15,7 +18,6 @@ module Sync.Hashing
   -- , srvGetMatched, SrvLookupMatched(..)
   -- , srvSaveUploadAs
   -- ) where
-  where
 
 import Control.Monad
 import Control.Monad.Trans
@@ -60,28 +62,6 @@ getFileInfoP fp bs = getFileInfo fp bs >>= yield
 
 --------------------------------------------------------------------------------
 -- Client
-
--- | Client: Get weak (\"rolling\") hashes for each block and send them over the stream
-clSendRollingHashes
-  :: MonadResourceBase m
-  => FilePath
-  -> BlockSize
-  -> NetApp m ()
-clSendRollingHashes fp s = do
-  bs <- liftIO $ BL.readFile fp
-  sendList $ toRollingBlocks s bs
-
--- | Client: Compare local file with incoming hashes, send out unmatched file
--- locations and return matched file locations as lookup list
-clGetMatchingMD5s
-  :: MonadResourceBase m
-  => FilePath
-  -> NetApp m [HashingMatch MD5]
-clGetMatchingMD5s fp = do
-  h       <- withBinaryFile' fp ReadMode
-  md5s    <- receiveList $ toMsg'
-  matches <- mapM (compareMD5 h) md5s
-  return $ catMaybes matches
 
 {-
 clUpload :: MonadResourceBase m => Handle -> ClLookupMatched -> NetApp m ()

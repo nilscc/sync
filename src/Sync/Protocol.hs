@@ -4,7 +4,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ConstraintKinds #-}
 
-module Sync2.Protocol
+module Sync.Protocol
   ( -- * Binary network protocol
     runServer, runClient
   , ServerSettings, serverSettings, HostPreference (..)
@@ -16,10 +16,10 @@ module Sync2.Protocol
     -- ** Protocol buffer messages
   , sendMsg, getMsg
   , toMsg, toMsg', fromMsg
-  , module Sync2.Protocol.ProtoBuff
-  , module Sync2.Protocol.ProtoBuff.FileTransferInfo
-  , module Sync2.Protocol.ProtoBuff.FileLoc
-  , module Sync2.Protocol.ProtoBuff.MD5Hash
+  , module Sync.Protocol.ProtoBuff
+  , module Sync.Protocol.ProtoBuff.FileTransferInfo
+  , module Sync.Protocol.ProtoBuff.FileLoc
+  , module Sync.Protocol.ProtoBuff.MD5Hash
     -- ** Combinators
   , andReturn
   ) where
@@ -35,13 +35,13 @@ import qualified Data.Conduit.List            as CL
 import qualified Data.Conduit.Network.Stream  as NS
 import qualified Text.ProtocolBuffers         as PB
 
-import Sync2.Protocol.Internal
+import Sync.Protocol.Internal
 
 -- re-exports
-import Sync2.Protocol.ProtoBuff
-import Sync2.Protocol.ProtoBuff.FileTransferInfo
-import Sync2.Protocol.ProtoBuff.FileLoc
-import Sync2.Protocol.ProtoBuff.MD5Hash
+import Sync.Protocol.ProtoBuff
+import Sync.Protocol.ProtoBuff.FileTransferInfo
+import Sync.Protocol.ProtoBuff.FileLoc
+import Sync.Protocol.ProtoBuff.MD5Hash
 
 runServer
   :: (MonadResourceBase m, MonadBaseControl IO m)

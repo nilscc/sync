@@ -1,4 +1,4 @@
-package Sync2.Protocol.ProtoBuff;
+package Sync.Protocol.ProtoBuff;
 
 message FileTransferInfo {
   required string ft_filename  = 0;

@@ -1,7 +1,7 @@
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE BangPatterns #-}
 
-module Sync2.Hashing
+module Sync.Hashing
   (
     getFileInfoP
     -- ** Client functions
@@ -39,10 +39,10 @@ import qualified Data.Sequence                as Seq
 import qualified Data.Foldable                as F
 import qualified Data.Set                     as S
 
-import Sync2.IO
-import Sync2.Exceptions
-import Sync2.Protocol
-import Sync2.Protocol.Internal
+import Sync.IO
+import Sync.Exceptions
+import Sync.Protocol
+import Sync.Protocol.Internal
 
 -- | Lookup map for weak (rolling) hashes
 type LookupWeak = Word32Map Int

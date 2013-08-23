@@ -1,8 +1,8 @@
-Name:                sync2
+Name:                sync
 Version:             0.1
 
-Synopsis:            file transfer and synchronisation (attempt #2)
-Description:         file transfer and synchronisation (attempt #2)
+Synopsis:            file transfer and synchronisation
+Description:         file transfer and synchronisation
 
 License:             BSD3
 License-file:        LICENSE
@@ -33,10 +33,10 @@ Library
     rolling-hash
 
   Exposed-modules:
-    Sync2
-    Sync2.Hashing
-    Sync2.IO
-    Sync2.Protocol
-    Sync2.Protocol.Internal
-    Sync2.Exceptions
+    Sync
+    Sync.Hashing
+    Sync.IO
+    Sync.Protocol
+    Sync.Protocol.Internal
+    Sync.Exceptions
   Other-modules:

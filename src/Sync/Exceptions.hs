@@ -1,12 +1,12 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 
-module Sync2.Exceptions where
+module Sync.Exceptions where
 
 import Control.Exception
 import Data.Typeable
 
-data Sync2Exception
+data SyncException
   = UnexpectedEndOfInput
   deriving (Typeable, Show)
 
-instance Exception Sync2Exception
+instance Exception SyncException

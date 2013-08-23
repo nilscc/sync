@@ -1,6 +1,6 @@
 {-# LANGUAGE ConstraintKinds #-}
 
-module Sync2.Protocol.Internal where
+module Sync.Protocol.Internal where
 
 import Control.Applicative
 import Control.Monad.Trans

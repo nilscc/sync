@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS -fno-warn-name-shadowing #-}
 
-module Sync2 where
+module Sync where
 
 import Control.Monad.Trans
 import System.IO
@@ -11,9 +11,9 @@ import Text.ProtocolBuffers
 import qualified Data.Map as M
 import qualified Data.Set as S
 
-import Sync2.IO
-import Sync2.Hashing
-import Sync2.Protocol
+import Sync.IO
+import Sync.Hashing
+import Sync.Protocol
 
 import Data.Conduit
 --import Data.Conduit.List (sinkNull)

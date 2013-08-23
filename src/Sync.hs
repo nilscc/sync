@@ -4,19 +4,10 @@
 module Sync where
 
 import Control.Monad.Trans
-import System.IO
---import System.Directory
-import Text.ProtocolBuffers
 
-import qualified Data.Map as M
-import qualified Data.Set as S
-
-import Sync.IO
-import Sync.Hashing
+import Sync.Local
+import Sync.Remote
 import Sync.Protocol
-
-import Data.Conduit
---import Data.Conduit.List (sinkNull)
 
 port :: Int
 port = 8872
@@ -24,67 +15,23 @@ port = 8872
 blocksize :: Int
 blocksize = 5000
 
-clF, srvF :: FilePath
-clF  = "src.mkv"
-srvF = "dest.mkv"
+clF :: FilePath
+clF = "test.mkv"
 
---main :: IO ()
---main = server
+server
+  :: FilePath   -- ^ Base directory
+  -> IO ()
+server dir = runServer (serverSettings dir port HostAny) $ do
 
---upF :: FilePath
---upF  = "test-upload.txt"
+  compareFileRemote
 
-condShow :: (MonadIO m, Show a) => Conduit a m a
-condShow = awaitForever $ \a -> do
-  liftIO (print a)
-  yield a
+client
+  :: FilePath   -- ^ Base directory
+  -> IO ()
+client dir = runClient (clientSettings dir port "localhost") $ do
 
-server :: IO ()
-server = runServer (serverSettings port HostAny) $ do
-
-  -- get fileinfo
-  --Just fi' <- getMsg
-  fi <- getFileInfo srvF blocksize
-  let fp    = toString     $ ft_filename fi
-      s_blk = fromIntegral $ ft_blocksize fi
-
-  -- get hashes & send out matching
-  m_lookup <- srvGetRollingHash fi
-
-  -- get matched/unmatched lookup map
-  m_fl <- srvSendMatching fp m_lookup s_blk
-  _lkup@(SrvLookupMatched m_final) <- srvGetMatched m_fl
+  matches <- compareLocalFile clF blocksize
 
   liftIO $ do
-    putStrLn "\nMatched blocks:"
-    mapM_ print $ M.toList m_final
-    putStrLn ""
-
-  --liftIO $ putStr "Receiving... " >> hFlush stdout
-  --srvSaveUploadAs fp lkup upF
-  --liftIO $ putStrLn "Done!"
-
-client :: IO ()
-client = runClient (clientSettings port "localhost") $ do
-
-  let fp = clF
-
-  -- send file info
-  --send1 $ getFileInfoP fp s_blck $= fromMsg
-
-  -- send rolling hashes
-  clSendRollingHashes fp blocksize
-
-  -- open local file
-  h <- withBinaryFile' fp ReadMode
-
-  -- get matching blocks (sends out unmatched blocks)
-  _lkup@(ClLookupMatched blcks) <- clGetMatching h
-  liftIO $ do
-    putStrLn "\nMatched blocks:"
-    mapM_ print $ S.elems blcks
-    putStrLn ""
-
-  --liftIO $ putStr "Uploading... " >> hFlush stdout
-  --clUpload h lkup
-  --liftIO $ putStrLn "Done!"
+    putStrLn "Matched blocks:"
+    mapM_ print matches

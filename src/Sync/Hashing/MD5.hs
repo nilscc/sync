@@ -9,7 +9,7 @@ import qualified Data.ByteString.Lazy     as BL
 import           System.IO
 
 import Sync.Internal.Types
-import Sync.Internal.Protocol
+import Sync.Protocol
 
 hashBlockMD5
   :: MonadIO m

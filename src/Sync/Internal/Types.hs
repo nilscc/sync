@@ -2,22 +2,40 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GADTs #-}
 
 module Sync.Internal.Types where
 
-import Data.Word
-import Crypto.RollingHash.Lookup
+import           Data.Word
+import           Crypto.RollingHash.Lookup
 
-import Control.Applicative
-import Control.Monad.Reader
-import Control.Monad.State
-import Data.Conduit
-import Data.Conduit.Network.Stream
-import Data.ByteString (ByteString)
+import           Control.Applicative
+import           Control.Monad.Reader
+import           Control.Monad.State
+import           Data.Conduit
+import qualified Data.Conduit.Network         as CN
+import           Data.Conduit.Network.Stream
+import           Data.ByteString (ByteString)
 
 type BlockSize = Int
 type FilePos   = Word64
 type FileBlock = (FilePos, BlockSize)
+
+type Host = ByteString
+type Port = Int
+
+--------------------------------------------------------------------------------
+-- * Settings
+
+data ClientSettings m = ClientSettings
+  { networkClientSettings :: CN.ClientSettings m
+  , clientBaseDir         :: FilePath
+  }
+
+data ServerSettings m = ServerSettings
+  { networkServerSettings :: CN.ServerSettings m
+  , serverBaseDir         :: FilePath
+  }
 
 --------------------------------------------------------------------------------
 -- * Hashing types
@@ -29,10 +47,12 @@ instance HasHashingMatch RollingHash where
   data HashingMatch RollingHash = HashingMatchWeak
     { localFilePosWeak  :: FilePos
     , remoteFilePosWeak :: FilePos }
+    deriving Show
 
 instance HasHashingMatch MD5 where
   data HashingMatch MD5 = HashingMatchStrong
     { localFilePosStrong :: FilePos }
+    deriving Show
 
 type RollingHash = (FilePos, Word32)
 

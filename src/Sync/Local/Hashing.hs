@@ -12,6 +12,7 @@ import           Sync.Hashing
 import           Sync.Internal.Types
 import           Sync.Internal.IO
 import           Sync.Internal.Protocol
+import           Sync.Protocol
 
 -- | Get weak (\"rolling\") hashes for each block and send them over the stream
 sendRollingHashes

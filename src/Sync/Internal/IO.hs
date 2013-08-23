@@ -18,7 +18,7 @@ import Text.ProtocolBuffers
 
 import qualified Data.Conduit.Binary as CB
 
-import Sync.Internal.Protocol
+import Sync.Protocol
 import Sync.Internal.Types
 
 --------------------------------------------------------------------------------

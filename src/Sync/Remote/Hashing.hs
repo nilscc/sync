@@ -14,6 +14,7 @@ import           Text.ProtocolBuffers
 import           Sync.Internal.IO
 import           Sync.Internal.Protocol
 import           Sync.Internal.Types
+import           Sync.Protocol
 import           Sync.Hashing
 
 -- | Server: Get rolling hashes from the current stream

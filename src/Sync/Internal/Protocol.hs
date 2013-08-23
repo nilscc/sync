@@ -4,62 +4,40 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ConstraintKinds #-}
 
-module Sync.Internal.Protocol
-  ( -- * Binary network protocol
-    runServer, runClient
-  , ServerSettings, serverSettings, HostPreference (..)
-  , ClientSettings, clientSettings
-  , send, sendList, NS.streamSink, NS.withElementSink
-  , receive, receiveList
-  , ($=), (=$)
-  , getStreamData
-    -- ** Protocol buffer messages
-  , sendMsg, getMsg
-  , toMsg, toMsg', fromMsg
-  , module Sync.Protocol.ProtoBuff
-  , module Sync.Protocol.ProtoBuff.FileTransferInfo
-  , module Sync.Protocol.ProtoBuff.FileLoc
-  , module Sync.Protocol.ProtoBuff.MD5Hash
-    -- ** Combinators
-  , andReturn
-  ) where
+module Sync.Internal.Protocol where
 
 import Control.Monad.Reader
 import Control.Monad.State
 import Data.ByteString (ByteString)
 import Data.Conduit
-import Data.Conduit.Network
 
 import qualified Data.ByteString.Lazy         as BL
 import qualified Data.Conduit.List            as CL
+import qualified Data.Conduit.Network         as CN
 import qualified Data.Conduit.Network.Stream  as NS
 import qualified Text.ProtocolBuffers         as PB
 
 import Sync.Internal.Types
-
--- re-exports
-import Sync.Protocol.ProtoBuff
-import Sync.Protocol.ProtoBuff.FileTransferInfo
-import Sync.Protocol.ProtoBuff.FileLoc
-import Sync.Protocol.ProtoBuff.MD5Hash
 
 runServer
   :: (MonadResourceBase m, MonadBaseControl IO m)
   => ServerSettings (ResourceT m)
   -> NetApp m ()
   -> m ()
-runServer s run = runResourceT $ runTCPServer s $ \ad -> do
-  sd <- NS.toStreamData ad
-  runReaderT (evalStateT (run >> close) (Left sd)) sd
+runServer s run =
+  runResourceT $ CN.runTCPServer (networkServerSettings s) $ \ad -> do
+    sd <- NS.toStreamData ad
+    runReaderT (evalStateT (run >> close) (Left sd)) sd
 
 runClient
   :: (MonadResourceBase m, MonadBaseControl IO m)
   => ClientSettings (ResourceT m)
   -> NetApp m ()
   -> m ()
-runClient s run = runResourceT $ runTCPClient s $ \ad -> do
-  sd <- NS.toStreamData ad
-  runReaderT (evalStateT (run >> close) (Left sd)) sd
+runClient s run =
+  runResourceT $ CN.runTCPClient (networkClientSettings s) $ \ad -> do
+    sd <- NS.toStreamData ad
+    runReaderT (evalStateT (run >> close) (Left sd)) sd
 
 getStreamData :: Monad m => NetApp m (NetData m)
 getStreamData = lift ask
